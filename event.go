@@ -1,16 +1,16 @@
-// Package event реализует простую систему событиый
+// Package bell реализует простую систему событиый
 //
-// На каждое событие (event) можно добавить несколько обработчиков (handlerFunc)
-// Вызов обработчиков события происходит в отдельной горутине через установленный канал
-// При вызове определенного события происходит последовательная передача сообщения (Message)
-// каждому обработчику события.
+// На каждый звон можно добавить несколько слушателей (handlerFunc)
+// Вызов слушателей происходит в отдельной горутине через установленный канал
+// При звоне в колокол происходит последовательная передача сообщения (Message)
+// каждому слушателю.
 //
 // Если канал закрывается, горутина для этого события прекращает свою работу.
 //
 // Пример использования:
-// On("event_name", func(message Message) { fmt.PrintLn(message) }) - добавляем обработчик события event_name
-// Call("event_name", "some_data") - Вызоваем события "event_name", тем самым запуская обработчики установленные ранее
-package event
+// Listen("event_name", func(message Message) { fmt.PrintLn(message) }) - добавляем слушателя события event_name
+// Ring("event_name", "some_data") - Звоним в колокол (вызываем событие "event_name")
+package bell
 
 import (
 	"fmt"
@@ -33,10 +33,10 @@ type events struct {
 	channels map[string][]chan Message
 }
 
-// On Добавление обработчика события
+// Listen Добавление слушателя
 // event - название/код события
-// handlerFunc - функция-обработчик события. На вход принимает структуру Message
-func On(event string, handlerFunc func(message Message)) {
+// handlerFunc - функция-обработчик. На вход принимает структуру Message
+func Listen(event string, handlerFunc func(message Message)) {
 	eventMap.Lock()
 	defer eventMap.Unlock()
 
@@ -56,10 +56,10 @@ func On(event string, handlerFunc func(message Message)) {
 	eventMap.channels[event] = append(eventMap.channels[event], channel)
 }
 
-// Call Вызывает событие
+// Ring Звон в колокол (вызыв события)
 // event - название/код события
 // value - данные, которые будут переданы в функции-обработчики события внутри Message
-func Call(event string, value interface{}) error {
+func Ring(event string, value interface{}) error {
 	eventMap.RLock()
 	defer eventMap.RUnlock()
 
@@ -73,7 +73,7 @@ func Call(event string, value interface{}) error {
 	return nil
 }
 
-// Has Возвращает true если существуют обработчики переданного события
+// Has Возвращает true если существуют слушатели переданного события
 func Has(event string) bool {
 	eventMap.RLock()
 	defer eventMap.RUnlock()
@@ -82,7 +82,7 @@ func Has(event string) bool {
 	return ok
 }
 
-// List Возвращает список событий, на которые установлены обработчики
+// List Возвращает список событий, на которые подписаны слушатели
 func List() []string {
 	eventMap.RLock()
 	defer eventMap.RUnlock()
@@ -94,10 +94,10 @@ func List() []string {
 	return list
 }
 
-// Remove Удаляет обработчики события или событий
-// При удалении обработчиков закрываются каналы и прекращают работу горутины
+// Remove Удаляет слушателей события или событий
+// При удалении слушателей закрываются каналы и прекращают работу горутины
 //
-// Если вызвать функцию без параметра names - будут удалены все обработчики всех событий
+// Если вызвать функцию без параметра names - будут удалены все слушатели всех событий
 func Remove(names ...string) {
 	eventMap.Lock()
 	defer eventMap.Unlock()
