@@ -1,4 +1,4 @@
-module events
+module github.com/nuttech/bell
 
 go 1.16
 

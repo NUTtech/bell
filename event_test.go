@@ -1,4 +1,4 @@
-package event
+package bell
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// resetSystem Очистка хранилища состояний обработчиков событий
+// resetSystem Очистка хранилища состояний слушателей событий
 func resetSystem() {
 	for k := range eventMap.channels {
 		for _, channel := range eventMap.channels[k] {
@@ -16,15 +16,15 @@ func resetSystem() {
 	eventMap = &events{channels: map[string][]chan Message{}}
 }
 
-// TestOn Проверка работы функции добавления обработчика событий
-func TestOn(t *testing.T) {
+// TestListen Проверка работы функции добавления слушателей событий
+func TestListen(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
 
 	expMessageEvent := "test_event"
 	expMessageValue := "value"
 
-	On(expMessageEvent, func(message Message) {
+	Listen(expMessageEvent, func(message Message) {
 		assert.Equal(t, expMessageEvent, message.Event)
 		assert.Equal(t, expMessageValue, message.Value)
 	})
@@ -33,7 +33,7 @@ func TestOn(t *testing.T) {
 	assert.Equal(t, 1, len(eventMap.channels[expMessageEvent]))
 
 	assert.NotPanics(t, func() {
-		err := Call(expMessageEvent, expMessageValue)
+		err := Ring(expMessageEvent, expMessageValue)
 		assert.NoError(t, err)
 	})
 
@@ -42,12 +42,12 @@ func TestOn(t *testing.T) {
 	})
 }
 
-// TestCall_Fail Проверка корректности ошибки при ошибочном вызове события
-func TestCall_Fail(t *testing.T) {
+// TestRing_Fail Проверка корректности ошибки при ошибочном звоне
+func TestRing_Fail(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
 
-	err := Call("undefined_event", func() {})
+	err := Ring("undefined_event", func() {})
 	assert.EqualError(t, err, "channel undefined_event not found")
 }
 
@@ -73,7 +73,7 @@ func TestRemove(t *testing.T) {
 	assert.Equal(t, 0, len(eventMap.channels))
 }
 
-// TestHas Проверка корректности определения существования обработчиков события
+// TestHas Проверка корректности определения существования слушателей события
 func TestHas(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
