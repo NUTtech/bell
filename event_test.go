@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// resetSystem Очистка хранилища состояний слушателей событий
+// resetSystem Clearing the State Store of Event Listeners
 func resetSystem() {
 	for k := range eventMap.channels {
 		for _, channel := range eventMap.channels[k] {
@@ -16,7 +16,7 @@ func resetSystem() {
 	eventMap = &events{channels: map[string][]chan Message{}}
 }
 
-// TestListen Проверка работы функции добавления слушателей событий
+// TestListen Testing the function of adding event listeners
 func TestListen(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
@@ -42,7 +42,7 @@ func TestListen(t *testing.T) {
 	})
 }
 
-// TestRing_Fail Проверка корректности ошибки при ошибочном звоне
+// TestRing_Fail Checking the correctness of error handling in case of an erroneous ringing
 func TestRing_Fail(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
@@ -51,7 +51,7 @@ func TestRing_Fail(t *testing.T) {
 	assert.EqualError(t, err, "channel undefined_event not found")
 }
 
-// TestRemove проверка удаления обработчиков события из хранилища
+// TestRemove Checking if event handlers are removed from storage
 func TestRemove(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
@@ -73,7 +73,7 @@ func TestRemove(t *testing.T) {
 	assert.Equal(t, 0, len(eventMap.channels))
 }
 
-// TestHas Проверка корректности определения существования слушателей события
+// TestHas Checking the Correctness of Determining the Existence of Event Listeners
 func TestHas(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
@@ -84,7 +84,7 @@ func TestHas(t *testing.T) {
 	assert.True(t, Has("test"))
 }
 
-// TestList Проверка корректного получения списка событий, на которые установлены обработчики
+// TestList Checking the correct receipt of the list of events on which handlers are installed
 func TestList(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
