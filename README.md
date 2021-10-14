@@ -2,6 +2,7 @@
 
 Bell is the simplest event system written in Go (Golang) which is based on the execution of handlers independent of the main channel.
 
+- Written in pure go. Has no third-party libraries.
 - Support for custom event data.
 - Internally, it launches each handler in a separate goroutine and passes messages to them through channels, the handlers are executed independently of the main thread.
 - Support for adding multiple handlers to an event.
@@ -19,63 +20,87 @@ go get -u github.com/nuttech/bell
 import "github.com/nuttech/bell"
 ```
 
-## Examples
+## Usage
+
+### Adding event listener
+The handler function accepts the Message structure as input
 ```go
-import (
-	"fmt"
-	"github.com/nuttech/bell"
-	"sort"
-	"time"
-)
+bell.Listen("event_name", func(message Message) {
+	// here you must write your handler code
+})
+```
 
-type CustomStruct struct {
-	name string
-	param int32
-}
-
-func Example() {
-	event := "event_name"
-	event2 := "event_name_2"
-
-	// add listener on event event_name
-	bell.Listen(event, func(message bell.Message) {
-		// we extend CustomStruct in message.Value
-		customStruct := message.Value.(CustomStruct)
-		fmt.Println(customStruct)
-	})
-	// add listener on event event_name_2
-	bell.Listen(event2, func(message bell.Message) {
-
-	})
-
-	// get event list
-	list := bell.List()
-
-	// only for test
-	sort.Strings(list)
-	fmt.Println(list)
-
-	// remove listeners on event_name_2
-	bell.Remove(event2)
-
-	// get event list again
-	fmt.Println(bell.List())
-
-	// check if exists event_name_2 event in storage
-	fmt.Println(bell.Has(event2))
-
-	// call event event_name
-	_ = bell.Ring(event, CustomStruct{name: "testName", param: 12})
-
-	// ONLY FOR EXAMPLE
-	// add sleep because the event handler does not have time
-	// to be processed before the completion of the script execution
-	time.Sleep(time.Millisecond * 50)
-
-	// Output:
-	// [event_name event_name_2]
-	// [event_name]
-	// false
-	// {testName 12}
+#### Struct Message
+```go
+type Message struct {
+	Event     string // event name
+	Timestamp time.Time // time when the event was called
+	Value     interface{} // any data
 }
 ```
+
+You can add more handlers one event:
+```go
+bell.Listen("event_name", func(message Message) { 
+	// first handler
+})
+bell.Listen("event_name", func(message Message) {
+    // second handler
+})
+```
+
+### Calling an event
+This code call event. Activating handlers, who subscribed on "event_name" event
+```go
+bell.Call("event_name", "some data")
+
+bell.Call("event_name", 1) // int
+
+bell.Call("event_name", false) // bool
+```
+
+If you passing struct type of data:
+```go
+type userStruct struct {
+	Name string
+}
+bell.Call("event_name", userStruct{name: "Jon"})
+```
+Then parsing the data in the handler may look like this:
+```go
+bell.Listen("event_name", func(message Message) {
+	user := message.Value.(userStruct)
+	
+	fmt.PrintLn(user) // {Name Jon}
+})
+```
+
+### Getting events list
+To get a list of events to which handlers are subscribed, call the code:
+```go
+bell.List()
+```
+
+### Checking if exists listeners of event
+You can check the existence of subscribers to an event like this:
+```go
+bell.Has("event_name")
+```
+
+### Removing listeners of event (all events)
+
+You can delete all listeners or listeners of only one event.
+
+#### Removing all listeners on all events 
+```go
+_ = bell.Remove()
+```
+
+#### Removing listeners of only the event "event_name"
+```go
+_ = bell.Remove("event_name")
+```
+
+## Examples
+
+See full example in [example_test.go](example_test.go).
