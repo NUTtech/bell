@@ -44,10 +44,10 @@ type Message struct {
 
 You can add more handlers one event:
 ```go
-bell.Listen("event_name", func(message Message) { 
+bell.Listen("event_name", func(message bell.Message) { 
 	// first handler
 })
-bell.Listen("event_name", func(message Message) {
+bell.Listen("event_name", func(message bell.Message) {
 	// second handler
 })
 ```
@@ -71,7 +71,7 @@ bell.Call("event_name", userStruct{Name: "Jon"})
 ```
 Then parsing the data in the handler may look like this:
 ```go
-bell.Listen("event_name", func(message Message) {
+bell.Listen("event_name", func(message bell.Message) {
 	user := message.Value.(userStruct)
 	
 	fmt.Printf("%#v\n", userStruct{Name: "Jon"})  // main.userStruct{Name:"Jon"}
