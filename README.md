@@ -1,5 +1,8 @@
 # Bell
 
+[![GoDoc](https://pkg.go.dev/badge/github.com/nuttech/bell?status.svg)](https://pkg.go.dev/github.com/nuttech/bell?tab=doc)
+[![Release](https://img.shields.io/github/release/nuttech/bell.svg?style=flat)](https://github.com/nuttech/bell/releases)
+
 Bell is the simplest event system written in Go (Golang) which is based on the execution of handlers independent of the main channel.
 
 - Written in pure go. Has no third-party libraries.
@@ -25,12 +28,12 @@ import "github.com/nuttech/bell"
 ### Adding event listener
 The handler function accepts the Message structure as input
 ```go
-bell.Listen("event_name", func(message Message) {
+bell.Listen("event_name", func(message bell.Message) {
 	// here you must write your handler code
 })
 ```
 
-#### Struct Message
+#### Struct Message ([bell.Message](https://pkg.go.dev/github.com/nuttech/bell#Message))
 ```go
 type Message struct {
 	Event     string // event name
@@ -45,7 +48,7 @@ bell.Listen("event_name", func(message Message) {
 	// first handler
 })
 bell.Listen("event_name", func(message Message) {
-    // second handler
+	// second handler
 })
 ```
 
@@ -64,14 +67,14 @@ If you passing struct type of data:
 type userStruct struct {
 	Name string
 }
-bell.Call("event_name", userStruct{name: "Jon"})
+bell.Call("event_name", userStruct{Name: "Jon"})
 ```
 Then parsing the data in the handler may look like this:
 ```go
 bell.Listen("event_name", func(message Message) {
 	user := message.Value.(userStruct)
 	
-	fmt.PrintLn(user) // {Name Jon}
+	fmt.Printf("%#v\n", userStruct{Name: "Jon"})  // main.userStruct{Name:"Jon"}
 })
 ```
 
