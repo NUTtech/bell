@@ -8,7 +8,7 @@ import (
 )
 
 type CustomStruct struct {
-	name string
+	name  string
 	param int32
 }
 
@@ -18,8 +18,8 @@ func Example() {
 
 	// add listener on event event_name
 	bell.Listen(event, func(message bell.Message) {
-		// we extend CustomStruct in message.Value
-		customStruct := message.Value.(CustomStruct)
+		// we extend CustomStruct in message
+		customStruct := message.(CustomStruct)
 		fmt.Println(customStruct)
 	})
 	// add listener on event event_name_2

@@ -14,18 +14,13 @@ package bell
 import (
 	"fmt"
 	"sync"
-	"time"
 )
 
 // State store of event handlers
 var eventMap = &events{channels: map[string][]chan Message{}}
 
 // Message The message that is passed to the event handler
-type Message struct {
-	Event     string
-	Timestamp time.Time
-	Value     interface{}
-}
+type Message interface{}
 
 type events struct {
 	sync.RWMutex
@@ -57,8 +52,8 @@ func Listen(event string, handlerFunc func(message Message)) {
 
 // Ring Call event there
 // event - event name
-// value - data that will be passed to the event handler
-func Ring(event string, value interface{}) error {
+// message - data that will be passed to the event handler
+func Ring(event string, message Message) error {
 	eventMap.RLock()
 	defer eventMap.RUnlock()
 
@@ -67,7 +62,7 @@ func Ring(event string, value interface{}) error {
 	}
 
 	for _, c := range eventMap.channels[event] {
-		c <- Message{Event: event, Timestamp: time.Now(), Value: value}
+		c <- message
 	}
 	return nil
 }
