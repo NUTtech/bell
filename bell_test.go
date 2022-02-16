@@ -25,8 +25,7 @@ func TestListen(t *testing.T) {
 	expMessageValue := "value"
 
 	Listen(expMessageEvent, func(message Message) {
-		assert.Equal(t, expMessageEvent, message.Event)
-		assert.Equal(t, expMessageValue, message.Value)
+		assert.Equal(t, expMessageValue, message)
 	})
 
 	assert.Equal(t, 1, len(eventMap.channels))

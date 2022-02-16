@@ -26,21 +26,13 @@ import "github.com/nuttech/bell"
 ## Usage
 
 ### Adding event listener
-The handler function accepts the Message structure as input
+The handler function accepts the Message type as input
 ```go
 bell.Listen("event_name", func(message bell.Message) {
 	// here you must write your handler code
 })
 ```
-
-#### Struct Message ([bell.Message](https://pkg.go.dev/github.com/nuttech/bell#Message))
-```go
-type Message struct {
-	Event     string // event name
-	Timestamp time.Time // time when the event was called
-	Value     interface{} // any data
-}
-```
+`bell.Message` has `interface{}` type and can consist any data.
 
 You can add more handlers one event:
 ```go
@@ -72,7 +64,7 @@ bell.Call("event_name", userStruct{Name: "Jon"})
 Then parsing the data in the handler may look like this:
 ```go
 bell.Listen("event_name", func(message bell.Message) {
-	user := message.Value.(userStruct)
+	user := message.(userStruct)
 	
 	fmt.Printf("%#v\n", userStruct{Name: "Jon"})  // main.userStruct{Name:"Jon"}
 })
