@@ -7,19 +7,31 @@ on:
     branches: [ master ]
 
 jobs:
-
-  build:
+  autotests:
     runs-on: ubuntu-latest
+    container: golang:1.17
+    
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    - name: Run autotests
+      run: |
+        go test -p 1 -race -vet=off -cover -coverprofile=coverage.out -covermode=atomic -v -coverpkg=./... -count=1 ./...
+        go tool cover -func=coverage.out
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
       with:
-        go-version: 1.17
+        token: ${{ secrets.CI_CODECOV_TOKEN }}
+        file: ./coverage.out
+        fail_ci_if_error: true
 
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+  code-style:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        version: latest
