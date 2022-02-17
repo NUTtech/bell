@@ -3,7 +3,7 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/nuttech/bell?status.svg)](https://pkg.go.dev/github.com/nuttech/bell?tab=doc)
 [![Release](https://img.shields.io/github/release/nuttech/bell.svg?style=flat)](https://github.com/nuttech/bell/releases)
 [![codecov](https://codecov.io/gh/NUTtech/bell/branch/master/graph/badge.svg?token=3TMnbQkEny)](https://codecov.io/gh/NUTtech/bell)
-[![Go](https://github.com/NUTtech/bell/actions/workflows/go.yml/badge.svg)](https://github.com/NUTtech/bell/actions/workflows/go.yml)
+[![Go](https://github.com/NUTtech/bell/actions/workflows/tests.yml/badge.svg)](https://github.com/NUTtech/bell/actions/workflows/tests.yml)
 
 Bell is the simplest event system written in Go (Golang) which is based on the execution of handlers independent of the main channel.
 

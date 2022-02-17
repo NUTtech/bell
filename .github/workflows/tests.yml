@@ -1,4 +1,4 @@
-name: Go
+name: Tests
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
 
     - name: Run autotests
       run: |
-        go test -p 1 -race -vet=off -cover -coverprofile=coverage.out -covermode=atomic -v -coverpkg=./... -count=1 ./...
+        go test -race -vet=off -cover -coverprofile=coverage.out -covermode=atomic -v -coverpkg=./... -count=1 ./...
         go tool cover -func=coverage.out
     
     - name: Upload coverage to Codecov
@@ -34,4 +34,4 @@ jobs:
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v2
       with:
-        version: latest
+        version: v1.29
