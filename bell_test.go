@@ -2,8 +2,11 @@ package bell
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"sort"
+	"sync/atomic"
 	"testing"
+	"time"
 )
 
 // resetSystem Clearing the State Store of Event Listeners
@@ -98,4 +101,23 @@ func TestList(t *testing.T) {
 
 	assert.Equal(t, 2, len(actualList))
 	assert.Equal(t, []string{"test", "test2"}, actualList)
+}
+
+// TestWait Checking Wait function
+func TestWait(t *testing.T) {
+	resetSystem()
+	defer resetSystem()
+
+	eventName := "test"
+	var wasRunning int32
+
+	Listen(eventName, func(Message) {
+		time.Sleep(time.Millisecond)
+		atomic.StoreInt32(&wasRunning, 1)
+	})
+	require.NoError(t, Ring(eventName, nil))
+
+	Wait()
+
+	assert.Equal(t, int32(1), wasRunning)
 }

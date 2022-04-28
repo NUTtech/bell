@@ -25,6 +25,7 @@ type Message interface{}
 type events struct {
 	sync.RWMutex
 	channels map[string][]chan Message
+	wg       sync.WaitGroup
 }
 
 // Listen Subscribe on event where
@@ -36,7 +37,7 @@ func Listen(event string, handlerFunc func(message Message)) {
 
 	channel := make(chan Message)
 
-	go func(c chan Message) {
+	go func(c chan Message, wg *sync.WaitGroup) {
 		for {
 			message, ok := <-c
 			if !ok {
@@ -44,8 +45,10 @@ func Listen(event string, handlerFunc func(message Message)) {
 			}
 
 			handlerFunc(message)
+
+			wg.Done()
 		}
-	}(channel)
+	}(channel, &eventMap.wg)
 
 	eventMap.channels[event] = append(eventMap.channels[event], channel)
 }
@@ -62,6 +65,7 @@ func Ring(event string, message Message) error {
 	}
 
 	for _, c := range eventMap.channels[event] {
+		eventMap.wg.Add(1)
 		c <- message
 	}
 	return nil
@@ -81,7 +85,7 @@ func List() []string {
 	eventMap.RLock()
 	defer eventMap.RUnlock()
 
-	var list []string
+	list := make([]string, 0, len(eventMap.channels))
 	for event := range eventMap.channels {
 		list = append(list, event)
 	}
@@ -112,4 +116,12 @@ func Remove(names ...string) {
 
 		delete(eventMap.channels, name)
 	}
+}
+
+// Wait Blocks the thread until all running events are completed
+func Wait() {
+	eventMap.Lock()
+	defer eventMap.Unlock()
+
+	eventMap.wg.Wait()
 }

@@ -98,6 +98,11 @@ _ = bell.Remove()
 _ = bell.Remove("event_name")
 ```
 
+#### Wait until all events finish their work
+```go
+bell.Wait()
+```
+
 ## Examples
 
 See full example in [example_test.go](example_test.go).

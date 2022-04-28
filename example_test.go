@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/nuttech/bell"
 	"sort"
-	"time"
 )
 
 type CustomStruct struct {
@@ -46,10 +45,8 @@ func Example() {
 	// call event event_name
 	_ = bell.Ring(event, CustomStruct{name: "testName", param: 12})
 
-	// ONLY FOR EXAMPLE
-	// add sleep because the event handler does not have time
-	// to be processed before the completion of the script execution
-	time.Sleep(time.Millisecond * 50)
+	// wait until the event completes its work
+	bell.Wait()
 
 	// Output:
 	// [event_name event_name_2]
