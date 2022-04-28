@@ -25,13 +25,13 @@ with [modules](https://github.com/golang/go/wiki/Modules) support and set Go wor
 1. Use the below Go command to install Bell:
 
 ```shell
-go get -u github.com/nuttech/bell
+go get -u github.com/nuttech/bell/v2
 ```
 
 2. Import package in your code:
 
 ```go
-import "github.com/nuttech/bell"
+import "github.com/nuttech/bell/v2"
 ```
 
 ## Usage

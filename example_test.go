@@ -2,7 +2,7 @@ package bell_test
 
 import (
 	"fmt"
-	"github.com/nuttech/bell"
+	"github.com/nuttech/bell/v2"
 	"sort"
 )
 
