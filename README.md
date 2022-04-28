@@ -15,6 +15,8 @@ main channel.
 - Support for adding multiple handlers to an event.
 - Complete unit testing.
 
+Bull does not contain logic for automatic restarts in case of a crash and does not have a persistent execution state store.
+
 ## Installation
 
 To install Bell package, you need install [Go](https://golang.org)
