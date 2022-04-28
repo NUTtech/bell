@@ -12,7 +12,7 @@ jobs:
     container: golang:1.17
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Run autotests
       run: |
@@ -20,10 +20,10 @@ jobs:
         go tool cover -func=coverage.out
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CI_CODECOV_TOKEN }}
-        file: ./coverage.out
+        files: ./coverage.out
         fail_ci_if_error: true
 
   code-style:
@@ -32,6 +32,6 @@ jobs:
     - uses: actions/checkout@v2
         
     - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v2
+      uses: golangci/golangci-lint-action@v3
       with:
         version: v1.44
