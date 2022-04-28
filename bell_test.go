@@ -122,8 +122,8 @@ func TestWait(t *testing.T) {
 	assert.Equal(t, int32(1), wasRunning)
 }
 
-// TestEvents_Queue checking function for set queue size
-func TestEvents_Queue(t *testing.T) {
+// TestQueue checking function for set queue size
+func TestQueue(t *testing.T) {
 	size := 6
 	Queue(size)
 	assert.Equal(t, size, globalState.queueSize)
