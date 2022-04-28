@@ -16,24 +16,27 @@ import (
 	"sync"
 )
 
-// State store of event handlers
-var eventMap = &events{channels: map[string][]chan Message{}}
-
 // Message The message that is passed to the event handler
 type Message interface{}
 
-type events struct {
+// Events thread safe structure stores events, their handlers and functions for management
+type Events struct {
 	sync.RWMutex
 	channels map[string][]chan Message
 	wg       sync.WaitGroup
 }
 
+// New constructor for Events
+func New() *Events {
+	return &Events{channels: map[string][]chan Message{}}
+}
+
 // Listen Subscribe on event where
 // event - the event name,
 // handlerFunc - handler function
-func Listen(event string, handlerFunc func(message Message)) {
-	eventMap.Lock()
-	defer eventMap.Unlock()
+func (e *Events) Listen(event string, handlerFunc func(message Message)) {
+	e.Lock()
+	defer e.Unlock()
 
 	channel := make(chan Message)
 
@@ -48,45 +51,45 @@ func Listen(event string, handlerFunc func(message Message)) {
 
 			wg.Done()
 		}
-	}(channel, &eventMap.wg)
+	}(channel, &e.wg)
 
-	eventMap.channels[event] = append(eventMap.channels[event], channel)
+	e.channels[event] = append(e.channels[event], channel)
 }
 
 // Ring Call event there
 // event - event name
 // message - data that will be passed to the event handler
-func Ring(event string, message Message) error {
-	eventMap.RLock()
-	defer eventMap.RUnlock()
+func (e *Events) Ring(event string, message Message) error {
+	e.RLock()
+	defer e.RUnlock()
 
-	if _, ok := eventMap.channels[event]; !ok {
+	if _, ok := e.channels[event]; !ok {
 		return fmt.Errorf("channel %s not found", event)
 	}
 
-	for _, c := range eventMap.channels[event] {
-		eventMap.wg.Add(1)
+	for _, c := range e.channels[event] {
+		e.wg.Add(1)
 		c <- message
 	}
 	return nil
 }
 
 // Has Checks if there are listeners for the passed event
-func Has(event string) bool {
-	eventMap.RLock()
-	defer eventMap.RUnlock()
+func (e *Events) Has(event string) bool {
+	e.RLock()
+	defer e.RUnlock()
 
-	_, ok := eventMap.channels[event]
+	_, ok := e.channels[event]
 	return ok
 }
 
 // List Returns a list of events that listeners are subscribed to
-func List() []string {
-	eventMap.RLock()
-	defer eventMap.RUnlock()
+func (e *Events) List() []string {
+	e.RLock()
+	defer e.RUnlock()
 
-	list := make([]string, 0, len(eventMap.channels))
-	for event := range eventMap.channels {
+	list := make([]string, 0, len(e.channels))
+	for event := range e.channels {
 		list = append(list, event)
 	}
 	return list
@@ -96,13 +99,13 @@ func List() []string {
 // Removing listeners closes channels and stops the goroutine.
 //
 // If you call the function without the "names" parameter, all listeners of all events will be removed.
-func Remove(names ...string) {
-	eventMap.Lock()
-	defer eventMap.Unlock()
+func (e *Events) Remove(names ...string) {
+	e.Lock()
+	defer e.Unlock()
 
 	if len(names) == 0 {
-		keys := make([]string, 0, len(eventMap.channels))
-		for k := range eventMap.channels {
+		keys := make([]string, 0, len(e.channels))
+		for k := range e.channels {
 			keys = append(keys, k)
 		}
 
@@ -110,18 +113,58 @@ func Remove(names ...string) {
 	}
 
 	for _, name := range names {
-		for _, channel := range eventMap.channels[name] {
+		for _, channel := range e.channels[name] {
 			close(channel)
 		}
 
-		delete(eventMap.channels, name)
+		delete(e.channels, name)
 	}
 }
 
 // Wait Blocks the thread until all running events are completed
-func Wait() {
-	eventMap.Lock()
-	defer eventMap.Unlock()
+func (e *Events) Wait() {
+	e.Lock()
+	defer e.Unlock()
 
-	eventMap.wg.Wait()
+	e.wg.Wait()
+}
+
+// globalState store of global event handlers
+var globalState = New()
+
+// Listen Subscribe on event where
+// event - the event name,
+// handlerFunc - handler function
+func Listen(event string, handlerFunc func(message Message)) {
+	globalState.Listen(event, handlerFunc)
+}
+
+// Ring Call event there
+// event - event name
+// message - data that will be passed to the event handler
+func Ring(event string, message Message) error {
+	return globalState.Ring(event, message)
+}
+
+// Has Checks if there are listeners for the passed event
+func Has(event string) bool {
+	return globalState.Has(event)
+}
+
+// List Returns a list of events that listeners are subscribed to
+func List() []string {
+	return globalState.List()
+}
+
+// Remove Removes listeners by event name
+// Removing listeners closes channels and stops the goroutine.
+//
+// If you call the function without the "names" parameter, all listeners of all events will be removed.
+func Remove(names ...string) {
+	globalState.Remove(names...)
+}
+
+// Wait Blocks the thread until all running events are completed
+func Wait() {
+	globalState.Wait()
 }

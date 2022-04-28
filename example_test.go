@@ -12,6 +12,8 @@ type CustomStruct struct {
 }
 
 func Example() {
+	// Example of use via global state
+
 	event := "event_name"
 	event2 := "event_name_2"
 
@@ -22,9 +24,7 @@ func Example() {
 		fmt.Println(customStruct)
 	})
 	// add listener on event event_name_2
-	bell.Listen(event2, func(message bell.Message) {
-
-	})
+	bell.Listen(event2, func(message bell.Message) {})
 
 	// get event list
 	list := bell.List()
@@ -53,4 +53,25 @@ func Example() {
 	// [event_name]
 	// false
 	// {testName 12}
+}
+
+func ExampleEvents() {
+	// Example of use struct (without global state)
+
+	eventName := "event_name"
+
+	// make a new events store
+	events := bell.New()
+
+	// add listener on event
+	events.Listen(eventName, func(msg bell.Message) { fmt.Println(msg) })
+
+	// call event event_name
+	_ = events.Ring(eventName, "Hello bell!")
+
+	// wait until the event completes its work
+	events.Wait()
+
+	// Output:
+	// Hello bell!
 }

@@ -11,12 +11,12 @@ import (
 
 // resetSystem Clearing the State Store of Event Listeners
 func resetSystem() {
-	for k := range eventMap.channels {
-		for _, channel := range eventMap.channels[k] {
+	for k := range globalState.channels {
+		for _, channel := range globalState.channels[k] {
 			close(channel)
 		}
 	}
-	eventMap = &events{channels: map[string][]chan Message{}}
+	globalState = &Events{channels: map[string][]chan Message{}}
 }
 
 // TestListen Testing the function of adding event listeners
@@ -31,8 +31,8 @@ func TestListen(t *testing.T) {
 		assert.Equal(t, expMessageValue, message)
 	})
 
-	assert.Equal(t, 1, len(eventMap.channels))
-	assert.Equal(t, 1, len(eventMap.channels[expMessageEvent]))
+	assert.Equal(t, 1, len(globalState.channels))
+	assert.Equal(t, 1, len(globalState.channels[expMessageEvent]))
 
 	assert.NotPanics(t, func() {
 		err := Ring(expMessageEvent, expMessageValue)
@@ -58,21 +58,21 @@ func TestRemove(t *testing.T) {
 	resetSystem()
 	defer resetSystem()
 
-	eventMap.channels["test"] = append(eventMap.channels["test"], make(chan Message), make(chan Message))
-	eventMap.channels["test2"] = append(eventMap.channels["test2"], make(chan Message))
+	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message), make(chan Message))
+	globalState.channels["test2"] = append(globalState.channels["test2"], make(chan Message))
 
 	Remove("test")
-	assert.Equal(t, 1, len(eventMap.channels))
+	assert.Equal(t, 1, len(globalState.channels))
 
-	eventMap.channels["test3"] = append(eventMap.channels["test3"], make(chan Message))
-	eventMap.channels["test4"] = append(eventMap.channels["test4"], make(chan Message))
+	globalState.channels["test3"] = append(globalState.channels["test3"], make(chan Message))
+	globalState.channels["test4"] = append(globalState.channels["test4"], make(chan Message))
 	Remove("test2")
-	assert.Equal(t, 2, len(eventMap.channels))
+	assert.Equal(t, 2, len(globalState.channels))
 
-	eventMap.channels["test3"] = append(eventMap.channels["test3"], make(chan Message))
-	eventMap.channels["test4"] = append(eventMap.channels["test4"], make(chan Message))
+	globalState.channels["test3"] = append(globalState.channels["test3"], make(chan Message))
+	globalState.channels["test4"] = append(globalState.channels["test4"], make(chan Message))
 	Remove()
-	assert.Equal(t, 0, len(eventMap.channels))
+	assert.Equal(t, 0, len(globalState.channels))
 }
 
 // TestHas Checking the Correctness of Determining the Existence of Event Listeners
@@ -82,7 +82,7 @@ func TestHas(t *testing.T) {
 
 	assert.False(t, Has("test"))
 
-	eventMap.channels["test"] = append(eventMap.channels["test"], make(chan Message))
+	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message))
 	assert.True(t, Has("test"))
 }
 
@@ -93,8 +93,8 @@ func TestList(t *testing.T) {
 
 	assert.Empty(t, List())
 
-	eventMap.channels["test"] = append(eventMap.channels["test"], make(chan Message), make(chan Message))
-	eventMap.channels["test2"] = append(eventMap.channels["test2"], make(chan Message))
+	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message), make(chan Message))
+	globalState.channels["test2"] = append(globalState.channels["test2"], make(chan Message))
 
 	actualList := List()
 	sort.Strings(actualList)
