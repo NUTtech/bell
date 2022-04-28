@@ -24,7 +24,7 @@ type Events struct {
 	sync.RWMutex
 	channels  map[string][]chan Message
 	wg        sync.WaitGroup
-	queueSize int
+	queueSize uint
 }
 
 // New constructor for Events
@@ -33,7 +33,7 @@ func New() *Events {
 }
 
 // Queue set events queue size
-func (e *Events) Queue(size int) *Events {
+func (e *Events) Queue(size uint) *Events {
 	e.Lock()
 	defer e.Unlock()
 
@@ -180,6 +180,6 @@ func Wait() {
 }
 
 // Queue set events queue size
-func Queue(size int) {
+func Queue(size uint) {
 	globalState.Queue(size)
 }

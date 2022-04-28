@@ -124,7 +124,7 @@ func TestWait(t *testing.T) {
 
 // TestQueue checking function for set queue size
 func TestQueue(t *testing.T) {
-	size := 6
+	var size uint = 6
 	Queue(size)
 	assert.Equal(t, size, globalState.queueSize)
 }
