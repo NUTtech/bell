@@ -22,13 +22,23 @@ type Message interface{}
 // Events thread safe structure stores events, their handlers and functions for management
 type Events struct {
 	sync.RWMutex
-	channels map[string][]chan Message
-	wg       sync.WaitGroup
+	channels  map[string][]chan Message
+	wg        sync.WaitGroup
+	queueSize int
 }
 
 // New constructor for Events
 func New() *Events {
 	return &Events{channels: map[string][]chan Message{}}
+}
+
+// Queue set events queue size
+func (e *Events) Queue(size int) *Events {
+	e.Lock()
+	defer e.Unlock()
+
+	e.queueSize = size
+	return e
 }
 
 // Listen Subscribe on event where
@@ -38,7 +48,7 @@ func (e *Events) Listen(event string, handlerFunc func(message Message)) {
 	e.Lock()
 	defer e.Unlock()
 
-	channel := make(chan Message)
+	channel := make(chan Message, e.queueSize)
 
 	go func(c chan Message, wg *sync.WaitGroup) {
 		for {
@@ -167,4 +177,9 @@ func Remove(names ...string) {
 // Wait Blocks the thread until all running events are completed
 func Wait() {
 	globalState.Wait()
+}
+
+// Queue set events queue size
+func Queue(size int) {
+	globalState.Queue(size)
 }

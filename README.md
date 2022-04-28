@@ -126,6 +126,12 @@ _ = bell.Remove("event_name")
 bell.Wait()
 ```
 
+### Change events queue size (apply only for new listeners)
+
+```go
+bell.Queue(42)
+```
+
 ### Usage without global state
 
 You can also use the bell package without using global state. To do this, you need to create a state storage object
