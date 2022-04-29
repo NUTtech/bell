@@ -21,9 +21,9 @@ type Message interface{}
 
 // Events thread safe structure stores events, their handlers and functions for management
 type Events struct {
-	sync.RWMutex
-	channels  map[string][]chan Message
+	mutex     sync.RWMutex
 	wg        sync.WaitGroup
+	channels  map[string][]chan Message
 	queueSize uint
 }
 
@@ -34,8 +34,8 @@ func New() *Events {
 
 // Queue set events queue size
 func (e *Events) Queue(size uint) *Events {
-	e.Lock()
-	defer e.Unlock()
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 
 	e.queueSize = size
 	return e
@@ -46,8 +46,8 @@ func (e *Events) Queue(size uint) *Events {
 // handlerFunc - handler function
 // copiesCount - count handlers copies run
 func (e *Events) ListenN(event string, handlerFunc func(message Message), copiesCount uint) {
-	e.Lock()
-	defer e.Unlock()
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 
 	channel := make(chan Message, e.queueSize)
 
@@ -78,8 +78,8 @@ func (e *Events) Listen(event string, handlerFunc func(message Message)) {
 // event - event name
 // message - data that will be passed to the event handler
 func (e *Events) Ring(event string, message Message) error {
-	e.RLock()
-	defer e.RUnlock()
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 
 	if _, ok := e.channels[event]; !ok {
 		return fmt.Errorf("channel %s not found", event)
@@ -94,8 +94,8 @@ func (e *Events) Ring(event string, message Message) error {
 
 // Has Checks if there are listeners for the passed event
 func (e *Events) Has(event string) bool {
-	e.RLock()
-	defer e.RUnlock()
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 
 	_, ok := e.channels[event]
 	return ok
@@ -103,8 +103,8 @@ func (e *Events) Has(event string) bool {
 
 // List Returns a list of events that listeners are subscribed to
 func (e *Events) List() []string {
-	e.RLock()
-	defer e.RUnlock()
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 
 	list := make([]string, 0, len(e.channels))
 	for event := range e.channels {
@@ -118,8 +118,8 @@ func (e *Events) List() []string {
 //
 // If you call the function without the "names" parameter, all listeners of all events will be removed.
 func (e *Events) Remove(names ...string) {
-	e.Lock()
-	defer e.Unlock()
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 
 	if len(names) == 0 {
 		keys := make([]string, 0, len(e.channels))
@@ -141,8 +141,8 @@ func (e *Events) Remove(names ...string) {
 
 // Wait Blocks the thread until all running events are completed
 func (e *Events) Wait() {
-	e.Lock()
-	defer e.Unlock()
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 
 	e.wg.Wait()
 }
