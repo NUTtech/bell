@@ -1,9 +1,11 @@
 package bell_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/nuttech/bell/v2"
 	"sort"
+	"time"
 )
 
 type CustomStruct struct {
@@ -12,7 +14,7 @@ type CustomStruct struct {
 }
 
 func Example() {
-	// Example of use via global state
+	// Use via global state
 
 	event := "event_name"
 	event2 := "event_name_2"
@@ -56,7 +58,7 @@ func Example() {
 }
 
 func ExampleEvents() {
-	// Example of use struct (without global state)
+	// Use events object (without global state)
 
 	eventName := "event_name"
 
@@ -74,4 +76,45 @@ func ExampleEvents() {
 
 	// Output:
 	// Hello bell!
+}
+
+func Example_usingContext() {
+	// Use bell with context
+
+	// create a custom struct for pass a context
+	type Custom struct {
+		ctx   context.Context
+		value interface{}
+	}
+
+	// add listener
+	bell.Listen("event", func(message bell.Message) {
+		for iterationsCount := 1; true; iterationsCount++ {
+			select {
+			case <-message.(*Custom).ctx.Done():
+				return
+			default:
+				fmt.Printf("Iteration #%d\n", iterationsCount)
+				time.Sleep(10 * time.Second)
+			}
+		}
+	})
+
+	// create a global context for all calls
+	globalCtx, cancelGlobalCtx := context.WithCancel(context.Background())
+
+	// create a children context for a call with timeout
+	ringCtx, ringCancel := context.WithTimeout(globalCtx, time.Minute)
+	defer ringCancel()
+
+	_ = bell.Ring("event", &Custom{ringCtx, "value"})
+
+	// wait a second for the handler to perform one iteration
+	time.Sleep(time.Second)
+
+	// interrupt all handlers
+	cancelGlobalCtx()
+
+	// Output:
+	// Iteration #1
 }
