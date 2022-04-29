@@ -1,6 +1,6 @@
 # Bell
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/nuttech/bell?status.svg)](https://pkg.go.dev/github.com/nuttech/bell?tab=doc)
+[![GoDoc](https://pkg.go.dev/badge/github.com/nuttech/bell?status.svg)](https://pkg.go.dev/github.com/nuttech/bell/v2?tab=doc)
 [![Release](https://img.shields.io/github/release/nuttech/bell.svg?style=flat)](https://github.com/nuttech/bell/releases)
 [![codecov](https://codecov.io/gh/NUTtech/bell/branch/master/graph/badge.svg?token=3TMnbQkEny)](https://codecov.io/gh/NUTtech/bell)
 [![Tests](https://github.com/NUTtech/bell/actions/workflows/tests.yml/badge.svg)](https://github.com/NUTtech/bell/actions/workflows/tests.yml)
@@ -59,16 +59,22 @@ bell.Listen("event_name", func(message bell.Message) {
 })
 ```
 
+You can add a handler with multiple copies for parallel event processing.
+
+```go
+bell.ListenN("event_name", func(msg bell.Message) { fmt.Println(msg) }, 42)
+```
+
 ### Calling an event
 
 This code call event. Activating handlers, who subscribed on "event_name" event
 
 ```go
-bell.Call("event_name", "some data")
+bell.Ring("event_name", "some data")
 
-bell.Call("event_name", 1) // int
+bell.Ring("event_name", 1) // int
 
-bell.Call("event_name", false) // bool
+bell.Ring("event_name", false) // bool
 ```
 
 If you passing struct type of data:
@@ -77,7 +83,7 @@ If you passing struct type of data:
 type userStruct struct {
 	Name string
 }
-bell.Call("event_name", userStruct{Name: "Jon"})
+bell.Ring("event_name", userStruct{Name: "Jon"})
 ```
 
 Then parsing the data in the handler may look like this:
