@@ -41,29 +41,37 @@ func (e *Events) Queue(size uint) *Events {
 	return e
 }
 
-// Listen Subscribe on event where
+// ListenN Subscribe on event where
 // event - the event name,
 // handlerFunc - handler function
-func (e *Events) Listen(event string, handlerFunc func(message Message)) {
+// copiesCount - count handlers copies run
+func (e *Events) ListenN(event string, handlerFunc func(message Message), copiesCount uint) {
 	e.Lock()
 	defer e.Unlock()
 
 	channel := make(chan Message, e.queueSize)
 
-	go func(c chan Message, wg *sync.WaitGroup) {
-		for {
-			message, ok := <-c
-			if !ok {
-				break
+	for i := uint(0); i < copiesCount; i++ {
+		go func(c chan Message, wg *sync.WaitGroup) {
+			for {
+				message, ok := <-c
+				if !ok {
+					break
+				}
+				handlerFunc(message)
+				wg.Done()
 			}
-
-			handlerFunc(message)
-
-			wg.Done()
-		}
-	}(channel, &e.wg)
+		}(channel, &e.wg)
+	}
 
 	e.channels[event] = append(e.channels[event], channel)
+}
+
+// Listen Subscribe on event where
+// event - the event name,
+// handlerFunc - handler function
+func (e *Events) Listen(event string, handlerFunc func(message Message)) {
+	e.ListenN(event, handlerFunc, 1)
 }
 
 // Ring Call event there
@@ -141,6 +149,14 @@ func (e *Events) Wait() {
 
 // globalState store of global event handlers
 var globalState = New()
+
+// ListenN Subscribe on event where
+// event - the event name,
+// handlerFunc - handler function
+// copiesCount - count handlers copies run
+func ListenN(event string, handlerFunc func(message Message), copiesCount uint) {
+	globalState.ListenN(event, handlerFunc, copiesCount)
+}
 
 // Listen Subscribe on event where
 // event - the event name,

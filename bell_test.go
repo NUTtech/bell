@@ -19,6 +19,27 @@ func resetSystem() {
 	globalState = &Events{channels: map[string][]chan Message{}}
 }
 
+// TestListenN checking the function of adding multiple copies of event listeners
+func TestListenN(t *testing.T) {
+	resetSystem()
+	defer resetSystem()
+
+	eventName := "event"
+	var wasRunning int32
+	ListenN(eventName, func(Message) { atomic.AddInt32(&wasRunning, 1) }, 3)
+
+	require.NoError(t, Ring(eventName, nil))
+	Wait()
+
+	assert.Equal(t, int32(1), wasRunning)
+
+	require.NoError(t, Ring(eventName, nil))
+	require.NoError(t, Ring(eventName, nil))
+	Wait()
+
+	assert.Equal(t, int32(3), wasRunning)
+}
+
 // TestListen Testing the function of adding event listeners
 func TestListen(t *testing.T) {
 	resetSystem()
