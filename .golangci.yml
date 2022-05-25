@@ -13,50 +13,49 @@ linters-settings:
 linters:
   disable-all: true
   enable:
+    - asciicheck
+    - bidichk
     - bodyclose
     - deadcode
     - depguard
     - dupl
+    - durationcheck
     - errcheck
+    - errname
     - exportloopref
     - exhaustive
     - funlen
     - goconst
     - gocritic
     - gocyclo
+    - godox
     - gofmt
-    - revive
     - goprintffuncname
     - gosec
     - gosimple
     - govet
+    - ifshort
+    - importas
     - ineffassign
     - lll
+    - makezero
     - misspell
     - nakedret
+    - nestif
+    - nilnil
     - nolintlint
-    - rowserrcheck
+    - prealloc
+    - predeclared
+    - promlinter
+    - revive
     - staticcheck
     - structcheck
     - stylecheck
+    - tenv
+    - thelper
     - typecheck
     - unconvert
     - unparam
     - unused
     - varcheck
     - whitespace
-    - asciicheck
-    - bidichk
-    - contextcheck
-    - durationcheck
-    - errname
-    - ifshort
-    - makezero
-    - nestif
-    - nilerr
-    - nilnil
-    - prealloc
-    - predeclared
-    - tenv
-    - thelper
-    - wastedassign
