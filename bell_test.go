@@ -1,8 +1,6 @@
 package bell
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"sort"
 	"sync/atomic"
 	"testing"
@@ -19,100 +17,101 @@ func resetSystem() {
 	globalState = &Events{channels: map[string][]chan Message{}}
 }
 
+func assertNoError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func assertTrue(t *testing.T, v bool) {
+	t.Helper()
+	if v != true {
+		t.Error("Value must be true")
+	}
+}
+
 // TestListenN checking the function of adding multiple copies of event listeners
 func TestListenN(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
 	eventName := "event"
 	var wasRunning int32
 	ListenN(eventName, func(Message) { atomic.AddInt32(&wasRunning, 1) }, 3)
 
-	require.NoError(t, Ring(eventName, nil))
+	assertNoError(t, Ring(eventName, nil))
 	Wait()
 
-	assert.Equal(t, int32(1), wasRunning)
+	assertTrue(t, wasRunning == 1)
 
-	require.NoError(t, Ring(eventName, nil))
-	require.NoError(t, Ring(eventName, nil))
+	assertNoError(t, Ring(eventName, nil))
+	assertNoError(t, Ring(eventName, nil))
 	Wait()
 
-	assert.Equal(t, int32(3), wasRunning)
+	assertTrue(t, wasRunning == 3)
 }
 
 // TestListen Testing the function of adding event listeners
 func TestListen(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
 	expMessageEvent := "test_event"
 	expMessageValue := "value"
 
 	Listen(expMessageEvent, func(message Message) {
-		assert.Equal(t, expMessageValue, message)
+		assertTrue(t, expMessageValue == message)
 	})
 
-	assert.Equal(t, 1, len(globalState.channels))
-	assert.Equal(t, 1, len(globalState.channels[expMessageEvent]))
+	assertTrue(t, len(globalState.channels) == 1)
+	assertTrue(t, len(globalState.channels[expMessageEvent]) == 1)
 
-	assert.NotPanics(t, func() {
-		err := Ring(expMessageEvent, expMessageValue)
-		assert.NoError(t, err)
-	})
-
-	assert.NotPanics(t, func() {
-		resetSystem()
-	})
+	assertNoError(t, Ring(expMessageEvent, expMessageValue))
 }
 
 // TestRing_Fail Checking the correctness of error handling in case of an erroneous ringing
 func TestRing_Fail(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
 	err := Ring("undefined_event", func() {})
-	assert.EqualError(t, err, "channel undefined_event not found")
+	assertTrue(t, err.Error() == "channel undefined_event not found")
 }
 
 // TestRemove Checking if event handlers are removed from storage
 func TestRemove(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
 	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message), make(chan Message))
 	globalState.channels["test2"] = append(globalState.channels["test2"], make(chan Message))
 
 	Remove("test")
-	assert.Equal(t, 1, len(globalState.channels))
+	assertTrue(t, len(globalState.channels) == 1)
 
 	globalState.channels["test3"] = append(globalState.channels["test3"], make(chan Message))
 	globalState.channels["test4"] = append(globalState.channels["test4"], make(chan Message))
 	Remove("test2")
-	assert.Equal(t, 2, len(globalState.channels))
+	assertTrue(t, len(globalState.channels) == 2)
 
 	globalState.channels["test3"] = append(globalState.channels["test3"], make(chan Message))
 	globalState.channels["test4"] = append(globalState.channels["test4"], make(chan Message))
 	Remove()
-	assert.Equal(t, 0, len(globalState.channels))
+	assertTrue(t, len(globalState.channels) == 0)
 }
 
 // TestHas Checking the Correctness of Determining the Existence of Event Listeners
 func TestHas(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
-	assert.False(t, Has("test"))
+	assertTrue(t, !Has("test"))
 
 	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message))
-	assert.True(t, Has("test"))
+	assertTrue(t, Has("test"))
 }
 
 // TestList Checking the correct receipt of the list of events on which handlers are installed
 func TestList(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
-	assert.Empty(t, List())
+	assertTrue(t, len(List()) == 0)
 
 	globalState.channels["test"] = append(globalState.channels["test"], make(chan Message), make(chan Message))
 	globalState.channels["test2"] = append(globalState.channels["test2"], make(chan Message))
@@ -120,13 +119,13 @@ func TestList(t *testing.T) {
 	actualList := List()
 	sort.Strings(actualList)
 
-	assert.Equal(t, 2, len(actualList))
-	assert.Equal(t, []string{"test", "test2"}, actualList)
+	assertTrue(t, len(actualList) == 2)
+	assertTrue(t, actualList[0] == "test")
+	assertTrue(t, actualList[1] == "test2")
 }
 
 // TestWait Checking Wait function
 func TestWait(t *testing.T) {
-	resetSystem()
 	defer resetSystem()
 
 	eventName := "test"
@@ -136,16 +135,18 @@ func TestWait(t *testing.T) {
 		time.Sleep(time.Millisecond)
 		atomic.StoreInt32(&wasRunning, 1)
 	})
-	require.NoError(t, Ring(eventName, nil))
+	assertNoError(t, Ring(eventName, nil))
 
 	Wait()
 
-	assert.Equal(t, int32(1), wasRunning)
+	assertTrue(t, wasRunning == 1)
 }
 
 // TestQueue checking function for set queue size
 func TestQueue(t *testing.T) {
+	defer resetSystem()
+
 	var size uint = 6
 	Queue(size)
-	assert.Equal(t, size, globalState.queueSize)
+	assertTrue(t, size == globalState.queueSize)
 }
