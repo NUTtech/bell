@@ -9,7 +9,7 @@ on:
 jobs:
   autotests:
     runs-on: ubuntu-latest
-    container: golang:1.17
+    container: golang:1.18
     
     steps:
     - uses: actions/checkout@v3
@@ -34,4 +34,4 @@ jobs:
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v3
       with:
-        version: v1.44
+        version: v1.46.2
